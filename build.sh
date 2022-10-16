@@ -18,7 +18,7 @@ cp ./dist/pmgraph .
 rm -rf build
 rm -rf dist
 #Cleaning up
-read -p "Do you want to proceed? (yes/no) " yn
+read -p "Do you want to install? (yes/no) " yn
 #Ask for permission
 case $yn in 
 	yes ) echo ok, we will proceed;;
