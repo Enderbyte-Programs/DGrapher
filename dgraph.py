@@ -87,8 +87,8 @@ def main(stdscr) :
                 else:
                     stdscr.addstr(sy-2-gy,ginc+1,blocklist[round((gyf/gyfmax*8)//1-1)])
                 if gy > 0:
-                    for i in range(gy+1):
-                        stdscr.addstr(sy-2-(gy-i),ginc+1,blocklist[7])
+                    for i in range(gy):
+                        stdscr.addstr(sy-2-(gy-i)+1,ginc+1,blocklist[7])
             stdscr.refresh()
             stdscr.getch()
             sleep(0.05)# Limiting to 20FPS
@@ -97,6 +97,9 @@ def main(stdscr) :
                 graph.append(xdifftx)
                 tick = 0#Waiting until later
             osz = s  
-        except ZeroDivisionError:
+        except KeyboardInterrupt:
+            break
+        except:
             sleep(5)#Halting until disk activity
+            continue
 curses.wrapper(main)
