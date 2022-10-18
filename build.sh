@@ -10,10 +10,14 @@ echo Compiling...
 pyinstaller --onefile dgraph.py
 pyinstaller --onefile mgraph.py
 pyinstaller --onefile pmgraph.py
+pyinstaller --onefile cpugraph.py
+pyinstaller --onefile pcpugraph.py
 #Compiling code
 cp ./dist/dgraph .
 cp ./dist/mgraph .
 cp ./dist/pmgraph .
+cp ./dist/cpugraph .
+cp ./dist/pcpugraph .
 #Copying binary out
 rm -rf build
 rm -rf dist
@@ -21,13 +25,16 @@ rm -rf dist
 read -p "Do you want to install? (yes/no) " yn
 #Ask for permission
 case $yn in 
-	yes ) echo ok, we will proceed;;
+	yes ) echo Installing...;;
 	no ) echo exiting...;
 		exit;;
 	* ) echo invalid response;
 		exit 1;;
 esac
 echo Installing...
+#Copying the files...
 sudo cp ./dgraph /usr/bin
 sudo cp ./mgraph /usr/bin
 sudo cp ./pmgraph /usr/bin
+sudo cp ./cpugraph /usr/bin
+sudo cp ./pcpugraph /usr/bin
