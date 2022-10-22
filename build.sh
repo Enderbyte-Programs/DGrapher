@@ -1,4 +1,4 @@
-#This file is if you want to build it yourself. This script MUST be run with sudo. This will also install this app with your permission
+#This file is if you want to build it yourself. This script MUST be run with sudo to install. This will also install pcmon to /usr/bin with your permission
 echo Installing Packages
 sudo apt install python3
 sudo apt install python3-pip
@@ -12,6 +12,8 @@ pyinstaller --onefile mgraph.py
 pyinstaller --onefile pmgraph.py
 pyinstaller --onefile cpugraph.py
 pyinstaller --onefile pcpugraph.py
+gcc pcmon.c --output pcmon
+#Compiling base C program
 #Compiling code
 cp ./dist/dgraph .
 cp ./dist/mgraph .
@@ -22,7 +24,7 @@ cp ./dist/pcpugraph .
 rm -rf build
 rm -rf dist
 #Cleaning up
-read -p "Do you want to install? (yes/no) " yn
+read -p "Do you want to install to /usr/bin? (yes/no) " yn
 #Ask for permission
 case $yn in 
 	yes ) echo Installing...;;
@@ -38,3 +40,4 @@ sudo cp ./mgraph /usr/bin
 sudo cp ./pmgraph /usr/bin
 sudo cp ./cpugraph /usr/bin
 sudo cp ./pcpugraph /usr/bin
+sudo cp ./pcmon /usr/bin
