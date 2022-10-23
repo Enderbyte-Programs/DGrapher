@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import psutil
 import curses
 from curses.textpad import rectangle
