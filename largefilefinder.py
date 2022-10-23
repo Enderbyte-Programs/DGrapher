@@ -48,8 +48,9 @@ def main(stdscr):
     stdscr.nodelay(False)
     curses.start_color()
     curses.init_pair(1,curses.COLOR_BLUE,curses.COLOR_BLACK)
-    fl = 0
+    
     while True:
+        fl = 0
         sx,sy = os.get_terminal_size()
         maxname = sx - 15
         if refresh:
