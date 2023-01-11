@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import curses
 from curses.textpad import rectangle
 import sys
@@ -48,69 +49,71 @@ def main(stdscr):
     stdscr.nodelay(False)
     curses.start_color()
     curses.init_pair(1,curses.COLOR_BLUE,curses.COLOR_BLACK)
-    
-    while True:
-        fl = 0
-        sx,sy = os.get_terminal_size()
-        maxname = sx - 15
-        if refresh:
-            _stime = datetime.datetime.now()
-            stdscr.addstr(0,0,"Calculating Files")
+    try:
+        while True:
+            fl = 0
+            sx,sy = os.get_terminal_size()
+            maxname = sx - 15
+            if refresh:
+                _stime = datetime.datetime.now()
+                stdscr.addstr(0,0,"Calculating Files")
+                stdscr.refresh()
+                for subdir, dirs, files in os.walk(ldir):
+                    for file in files:
+                        fl += 1
+                        try:
+                            stdscr.addstr(0,0," "*(sx-1))
+                            stdscr.addstr(0,0,f"Calculating {os.path.join(subdir, file)}"[0:sx-1])
+                            stdscr.refresh()
+                            fileslist[os.path.join(subdir, file)] = os.path.getsize(os.path.join(subdir, file))
+                            fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)[0:999]}#Only keeping top 1000 to save memory
+                        except (PermissionError, FileNotFoundError, OSError):
+                            pass
+                _etime = datetime.datetime.now()
+            refresh = False
+            stdscr.addstr(0,0," "*(sx-1))
+            stdscr.addstr(0,0,f"Calculated {fl} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
+            rectangle(stdscr,1,0,sy-2,sx-1)
+            yinc = 0
+            for file in list(fileslist.items())[offset:offset+(sy-4)]:
+                yinc += 1
+                name, size = file
+                if len(name) > maxname:
+                    name = name[0:maxname-3] + "..."
+                else:
+                    name = name + ((maxname-len(name))*" ")
+                size = parse_size(size)
+                message = name + " " + size
+                if yinc + offset -1 == selected:
+                    stdscr.addstr(yinc + 1,1,message,curses.color_pair(1))
+                else:
+                    stdscr.addstr(yinc + 1,1,message)
+            stdscr.addstr(sy-1,0,list(fileslist.keys())[selected][0:sx-1])
             stdscr.refresh()
-            for subdir, dirs, files in os.walk(ldir):
-                for file in files:
-                    fl += 1
-                    try:
-                        stdscr.addstr(0,0," "*(sx-1))
-                        stdscr.addstr(0,0,f"Calculating {os.path.join(subdir, file)}"[0:sx-1])
-                        stdscr.refresh()
-                        fileslist[os.path.join(subdir, file)] = os.path.getsize(os.path.join(subdir, file))
-                        fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)[0:999]}#Only keeping top 1000 to save memory
-                    except (PermissionError, FileNotFoundError, OSError):
-                        pass
-            _etime = datetime.datetime.now()
-        refresh = False
-        stdscr.addstr(0,0," "*(sx-1))
-        stdscr.addstr(0,0,f"Calculated {fl} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
-        rectangle(stdscr,1,0,sy-2,sx-1)
-        yinc = 0
-        for file in list(fileslist.items())[offset:offset+(sy-4)]:
-            yinc += 1
-            name, size = file
-            if len(name) > maxname:
-                name = name[0:maxname-3] + "..."
-            else:
-                name = name + ((maxname-len(name))*" ")
-            size = parse_size(size)
-            message = name + " " + size
-            if yinc + offset -1 == selected:
-                stdscr.addstr(yinc + 1,1,message,curses.color_pair(1))
-            else:
-                stdscr.addstr(yinc + 1,1,message)
-        stdscr.addstr(sy-1,0,list(fileslist.keys())[selected][0:sx-1])
-        stdscr.refresh()
-        ch = stdscr.getch()
-        if ch == 114:
-            refresh = True#Refresh if R is pressed
-        elif ch == curses.KEY_DOWN:
-            if selected == len(fileslist)-1:
-                pass
-            else:
-                selected += 1
-                if selected > offset + (sy-5):
-                    offset += 1# Page goes down
-        elif ch == curses.KEY_UP:
-            if selected > 0:
-                selected -= 1
-                if selected < offset and offset > 0:
-                    offset -= 1
-        elif ch == curses.KEY_DC:
-            try:
-                os.remove(list(fileslist.keys())[selected])
-                del fileslist[list(fileslist.keys())[selected]]
-            except Exception as e:
-                displaymsg(stdscr,["Failed to remove file.",str(e)[0:sx-10]])
-        stdscr.erase()
+            ch = stdscr.getch()
+            if ch == 114:
+                refresh = True#Refresh if R is pressed
+            elif ch == curses.KEY_DOWN:
+                if selected == len(fileslist)-1:
+                    pass
+                else:
+                    selected += 1
+                    if selected > offset + (sy-5):
+                        offset += 1# Page goes down
+            elif ch == curses.KEY_UP:
+                if selected > 0:
+                    selected -= 1
+                    if selected < offset and offset > 0:
+                        offset -= 1
+            elif ch == curses.KEY_DC:
+                try:
+                    os.remove(list(fileslist.keys())[selected])
+                    del fileslist[list(fileslist.keys())[selected]]
+                except Exception as e:
+                    displaymsg(stdscr,["Failed to remove file.",str(e)[0:sx-10]])
+            stdscr.erase()
+    except KeyboardInterrupt:
+        sys.exit(0)
 
 try:
     curses.wrapper(main)
