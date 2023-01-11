@@ -51,6 +51,7 @@ def main(stdscr):
     offset = 0
     stdscr.nodelay(False)
     curses.start_color()
+    xoffset = 0
     curses.init_pair(1,curses.COLOR_BLUE,curses.COLOR_BLACK)
     try:
         while True:
@@ -83,23 +84,26 @@ def main(stdscr):
             refresh = False
             
             stdscr.addstr(0,0," "*(sx-1))
-            stdscr.addstr(0,0,f"Calculated {file_count} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
+            stdscr.addstr(0,0,f"{file_count} files in {_etime - _stime}| xoffset: {xoffset} | sel: {selected} | Press DEL to delete"[0:sx-1])
             rectangle(stdscr,1,0,sy-2,sx-1)
             yinc = 0
             for file in nfileslist[offset:offset+(sy-4)]:
                 yinc += 1
+                
                 name, size = file
+                name = name[xoffset:]  
                 if len(name) > maxname:
                     name = name[0:maxname-3] + "..."
                 else:
                     name = name + ((maxname-len(name))*" ")
+                
                 size = parse_size(size)
                 message = name + " " + size
                 if yinc + offset -1 == selected:
                     stdscr.addstr(yinc + 1,1,message,curses.color_pair(1))
                 else:
                     stdscr.addstr(yinc + 1,1,message)
-            stdscr.addstr(sy-1,0,list(fileslist.keys())[selected][0:sx-1])
+            stdscr.addstr(sy-1,0,str(os.path.getsize(list(fileslist.keys())[selected])) + " Bytes, Last updated: "+ str(datetime.datetime.fromtimestamp(os.path.getctime(list(fileslist.keys())[selected]))))
             stdscr.refresh()
             ch = stdscr.getch()
             if ch == 114:
@@ -116,6 +120,11 @@ def main(stdscr):
                     selected -= 1
                     if selected < offset and offset > 0:
                         offset -= 1
+            elif ch == curses.KEY_RIGHT:
+                xoffset+= 1
+            elif ch == curses.KEY_LEFT:
+                if xoffset > 0:
+                    xoffset -= 1
             elif ch == curses.KEY_DC:
                 try:
                     os.remove(list(fileslist.keys())[selected])
