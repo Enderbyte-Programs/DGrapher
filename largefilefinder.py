@@ -68,20 +68,25 @@ def main(stdscr):
                         try:
                             flx += 1
                             stdscr.addstr(0,0," "*(sx-1))
-                            stdscr.addstr(0,0,f"Calculating {os.path.join(subdir, file)}"[0:sx-1])
+                            stdscr.addstr(0,0,f"Calculating {subdir}"[0:sx-1])
                             stdscr.addstr(0,sx-9,f" ({round(flx/file_count*100,1)} %)")
                             stdscr.refresh()
                             fileslist[os.path.join(subdir, file)] = os.path.getsize(os.path.join(subdir, file))
-                            fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)}
+                            
                         except (PermissionError, FileNotFoundError, OSError):
                             pass
+                stdscr.addstr(1,0,"Sorting...")
+                stdscr.refresh()
+                fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)}
+                nfileslist = list(fileslist.items())
                 _etime = datetime.datetime.now()
             refresh = False
+            
             stdscr.addstr(0,0," "*(sx-1))
-            stdscr.addstr(0,0,f"Calculated {flx} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
+            stdscr.addstr(0,0,f"Calculated {file_count} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
             rectangle(stdscr,1,0,sy-2,sx-1)
             yinc = 0
-            for file in list(fileslist.items())[offset:offset+(sy-4)]:
+            for file in nfileslist[offset:offset+(sy-4)]:
                 yinc += 1
                 name, size = file
                 if len(name) > maxname:
@@ -115,6 +120,9 @@ def main(stdscr):
                 try:
                     os.remove(list(fileslist.keys())[selected])
                     del fileslist[list(fileslist.keys())[selected]]
+                    selected -= 1
+                    fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)}
+                    nfileslist = list(fileslist.items())
                 except Exception as e:
                     displaymsg(stdscr,["Failed to remove file.",str(e)[0:sx-10]])
             stdscr.erase()
