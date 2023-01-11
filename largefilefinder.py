@@ -41,7 +41,10 @@ def displaymsg(stdscr,message: list):
     stdscr.refresh()
     stdscr.getch()
 def main(stdscr):
-    
+    stdscr.addstr(0,0,"Initializing File counter (This may take a minute depending on your disk speed)")
+    stdscr.refresh()
+    file_count = sum(len(files) for _, _, files in os.walk(ldir))
+
     refresh = True
     fileslist = {}
     selected = 0
@@ -54,6 +57,7 @@ def main(stdscr):
             fl = 0
             sx,sy = os.get_terminal_size()
             maxname = sx - 15
+            flx = 0
             if refresh:
                 _stime = datetime.datetime.now()
                 stdscr.addstr(0,0,"Calculating Files")
@@ -62,17 +66,19 @@ def main(stdscr):
                     for file in files:
                         fl += 1
                         try:
+                            flx += 1
                             stdscr.addstr(0,0," "*(sx-1))
                             stdscr.addstr(0,0,f"Calculating {os.path.join(subdir, file)}"[0:sx-1])
+                            stdscr.addstr(0,sx-9,f" ({round(flx/file_count*100,1)} %)")
                             stdscr.refresh()
                             fileslist[os.path.join(subdir, file)] = os.path.getsize(os.path.join(subdir, file))
-                            fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)[0:999]}#Only keeping top 1000 to save memory
+                            fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)}
                         except (PermissionError, FileNotFoundError, OSError):
                             pass
                 _etime = datetime.datetime.now()
             refresh = False
             stdscr.addstr(0,0," "*(sx-1))
-            stdscr.addstr(0,0,f"Calculated {fl} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
+            stdscr.addstr(0,0,f"Calculated {flx} files in {_etime - _stime} | sel: {selected} | Press DEL to delete"[0:sx-1])
             rectangle(stdscr,1,0,sy-2,sx-1)
             yinc = 0
             for file in list(fileslist.items())[offset:offset+(sy-4)]:
