@@ -69,8 +69,7 @@ def main(stdscr):
                         try:
                             flx += 1
                             stdscr.addstr(0,0," "*(sx-1))
-                            stdscr.addstr(0,0,f"Calculating {subdir}"[0:sx-1])
-                            stdscr.addstr(0,sx-9,f" ({round(flx/file_count*100,1)} %)")
+                            stdscr.addstr(0,0,f"Calculating ({round(flx/file_count*100,1)} %)"[0:sx-1])
                             stdscr.refresh()
                             fileslist[os.path.join(subdir, file)] = os.path.getsize(os.path.join(subdir, file))
                             
@@ -84,7 +83,7 @@ def main(stdscr):
             refresh = False
             
             stdscr.addstr(0,0," "*(sx-1))
-            stdscr.addstr(0,0,f"{file_count} files in {_etime - _stime}| xoffset: {xoffset} | sel: {selected} | Press DEL to delete"[0:sx-1])
+            stdscr.addstr(0,0,f"{file_count} files in {_etime - _stime}| coords: {xoffset},{selected} | Press h for help"[0:sx-1])
             rectangle(stdscr,1,0,sy-2,sx-1)
             yinc = 0
             for file in nfileslist[offset:offset+(sy-4)]:
@@ -103,7 +102,7 @@ def main(stdscr):
                     stdscr.addstr(yinc + 1,1,message,curses.color_pair(1))
                 else:
                     stdscr.addstr(yinc + 1,1,message)
-            stdscr.addstr(sy-1,0,str(os.path.getsize(list(fileslist.keys())[selected])) + " Bytes, Last updated: "+ str(datetime.datetime.fromtimestamp(os.path.getctime(list(fileslist.keys())[selected]))))
+            stdscr.addstr(sy-1,0,(str(os.path.getsize(list(fileslist.keys())[selected])) + " Bytes, Last updated: "+ str(datetime.datetime.fromtimestamp(os.path.getctime(list(fileslist.keys())[selected]))))[0:sx-1])
             stdscr.refresh()
             ch = stdscr.getch()
             if ch == 114:
@@ -125,11 +124,34 @@ def main(stdscr):
             elif ch == curses.KEY_LEFT:
                 if xoffset > 0:
                     xoffset -= 1
+            elif ch == curses.KEY_SLEFT:
+                xoffset = 0
+            elif ch == 101:
+                offset = len(nfileslist)-3
+                selected = len(nfileslist)-3
+            elif ch == 104:
+                displaymsg(stdscr,[
+                    "LFF help menu",
+                    "DEL: Delete selected file (permanently)",
+                    "H: help menu",
+                    "E: Jump to bottom of page",
+                    "T: Jump to top of page",
+                    "R: Refresh sizes (takes a long time)",
+                    "Right Arrow: Move page right",
+                    "Left Arrow: Move page left",
+                    "Shift Left Arrow: Move page all the way to the left",
+                    "Down Arrow: Move page down",
+                    "Up Arrow: Move page up"
+                ])
+            elif ch == 116:
+                selected = 0
+                offset = 0
             elif ch == curses.KEY_DC:
                 try:
                     os.remove(list(fileslist.keys())[selected])
                     del fileslist[list(fileslist.keys())[selected]]
-                    selected -= 1
+                    if selected > 0:
+                        selected -= 1
                     fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)}
                     nfileslist = list(fileslist.items())
                 except Exception as e:
