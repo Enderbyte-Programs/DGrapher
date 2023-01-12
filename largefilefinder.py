@@ -52,6 +52,7 @@ def main(stdscr):
     stdscr.nodelay(False)
     curses.start_color()
     xoffset = 0
+    dlist = []
     curses.init_pair(1,curses.COLOR_BLUE,curses.COLOR_BLACK)
     try:
         while True:
@@ -60,6 +61,8 @@ def main(stdscr):
             maxname = sx - 15
             flx = 0
             if refresh:
+                fileslist = {}
+                nfileslist = []
                 _stime = datetime.datetime.now()
                 stdscr.addstr(0,0,"Calculating Files")
                 stdscr.refresh()
@@ -102,7 +105,14 @@ def main(stdscr):
                     stdscr.addstr(yinc + 1,1,message,curses.color_pair(1))
                 else:
                     stdscr.addstr(yinc + 1,1,message)
-            stdscr.addstr(sy-1,0,(str(os.path.getsize(list(fileslist.keys())[selected])) + " Bytes, Last updated: "+ str(datetime.datetime.fromtimestamp(os.path.getctime(list(fileslist.keys())[selected]))))[0:sx-1])
+            try:
+                stdscr.addstr(sy-1,0,(str(os.path.getsize(list(fileslist.keys())[selected])) + " Bytes, Last updated: "+ str(datetime.datetime.fromtimestamp(os.path.getctime(list(fileslist.keys())[selected]))))[0:sx-1])
+            except FileNotFoundError:
+                stdscr.addstr(sy-1,0,"Error, file not found. Please refresh")
+            except IndexError:
+                selected = len(nfileslist)-1
+            except PermissionError:
+                stdscr.addstr(sy-1,0,"Error: no permission!")
             stdscr.refresh()
             ch = stdscr.getch()
             if ch == 114:
@@ -127,8 +137,8 @@ def main(stdscr):
             elif ch == curses.KEY_SLEFT:
                 xoffset = 0
             elif ch == 101:
-                offset = len(nfileslist)-3
-                selected = len(nfileslist)-3
+                offset = len(nfileslist)-1
+                selected = len(nfileslist)-1
             elif ch == 104:
                 displaymsg(stdscr,[
                     "LFF help menu",
@@ -154,6 +164,8 @@ def main(stdscr):
                         selected -= 1
                     fileslist = {k: v for k, v in sorted(fileslist.items(), key=lambda item: item[1],reverse=True)}
                     nfileslist = list(fileslist.items())
+                except FileNotFoundError:
+                    pass
                 except Exception as e:
                     displaymsg(stdscr,["Failed to remove file.",str(e)[0:sx-10]])
             stdscr.erase()
