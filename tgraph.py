@@ -7,10 +7,6 @@ from subprocess import check_output
 import sys
 blocklist = ["▁","▂","▃","▄","▅","▆","▇","█"]
 #blocklist = [str(s) for s in [0,1,2,3,4,5,6,7]]#for testing
-if len(sys.argv) < 2:
-    print("Please remember to provide IP")
-    sys.exit(-1)
-IP = sys.argv[1]
 def ceil(a,b):
     return -(a // -b)
 def average(data: list):
@@ -34,26 +30,21 @@ def main(stdscr) :
                 rectangle(stdscr,4,0,sy-1,sx-2)
             except:
                 pass
-            try:
-                _s = check_output(["ping","-c","1",IP])
-            except Exception as e:
-                _s = f"dsfdfstime=5000 ms".encode()
-                stdscr.addstr(sy-1,0,f"ERROR: Ping get failed: {str(e)}"[0:sx-1])
-                lostpackets += 1
-            s = round(float(_s.decode().split("time=")[1].split(" ")[0]))
+
+            _s = check_output(["sensors"])
+            __ssp = _s.decode().split("\n")
+
+            s = round(float([xp for xp in __ssp[3].split(" ") if xp != ""][2].replace("+","").replace("°C","")))
             
             graphy = sy-7
             graphx = sx-3
             maxgraphy = max(graph[graphxpoint:])
             graphyinc = (maxgraphy/graphy)
-            stdscr.addstr(0,0,f"Watching {IP}")
-            stdscr.addstr(1,0,f"Current Ping: {s} ms")
-            stdscr.addstr(0,30,f"Max Ping: {max(graph[graphxpoint:])} ms")#Using difft to 1s
-            stdscr.addstr(1,30,f"Minimum Ping: {min(graph[graphxpoint:])} ms")#Using difft to 1s
-            stdscr.addstr(3,0,f"Graph Y Increment: {round(graphyinc)} ms")
-            stdscr.addstr(2,0,f"Average Ping: {round(average(graph[graphxpoint:]),3)} ms")
-            stdscr.addstr(3,30,f"Watching for {tick} seconds")
-            stdscr.addstr(2,30,f"Packet Loss: {round(lostpackets/len(graph)*100,3)}%")
+            stdscr.addstr(0,0,f"Current Temperature: {s} C")
+            stdscr.addstr(0,30,f"Max Temp: {max(graph[graphxpoint:])} C")#Using difft to 1s
+            stdscr.addstr(1,30,f"Minimum Temp: {min(graph[graphxpoint:])} C")#Using difft to 1s
+            stdscr.addstr(2,0,f"Graph Y Increment: {round(graphyinc)} C")
+            stdscr.addstr(1,0,f"Average Temp: {round(average(graph[graphxpoint:]),3)} C")
 
             #stdscr.addstr(0,20,f"CPU Cores: {psutil.cpu_count()}")
             if graphyinc == 0:
