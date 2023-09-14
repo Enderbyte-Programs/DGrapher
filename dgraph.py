@@ -6,6 +6,10 @@ import os
 import sys
 from time import sleep
 blocklist = ["▁","▂","▃","▄","▅","▆","▇","█"]
+az = "/"
+if len(sys.argv) > 1:
+    az = sys.argv[1]
+
 #blocklist = [str(s) for s in [0,1,2,3,4,5,6,7]]#for testing
 def ceil(a,b):
     return -(a // -b)
@@ -29,7 +33,7 @@ def parse_size(data: int) -> str:
 def main(stdscr) :
     tick =0
     stdscr.nodelay(1)
-    s = shutil.disk_usage("/").free
+    s = shutil.disk_usage(az).free
     osz = s
     xdifft = 0
     difft = 0
@@ -53,7 +57,7 @@ def main(stdscr) :
                 if len(graph) > graphx - 1:
                     graphxpoint += 1
             sx, sy = os.get_terminal_size()
-            s = shutil.disk_usage("/").free
+            s = shutil.disk_usage(az).free
             try:
                 rectangle(stdscr,5,0,sy-1,sx-2)
             except:
@@ -69,10 +73,10 @@ def main(stdscr) :
                 xdiff = diff
             xdifft += xdiff
             difft += diff
-            stdscr.addstr(0,0,f"Total Space: {shutil.disk_usage('/').total} bytes")
-            stdscr.addstr(1,0,f"Used Space: {shutil.disk_usage('/').used} bytes")
-            stdscr.addstr(2,0,f"Free Space: {shutil.disk_usage('/').free} bytes")
-            stdscr.addstr(3,0,f"Used percent: {round(shutil.disk_usage('/').used/shutil.disk_usage('/').total*100,3)}%")
+            stdscr.addstr(0,0,f"Total Space: {shutil.disk_usage(az).total} bytes")
+            stdscr.addstr(1,0,f"Used Space: {shutil.disk_usage(az).used} bytes")
+            stdscr.addstr(2,0,f"Free Space: {shutil.disk_usage(az).free} bytes")
+            stdscr.addstr(3,0,f"Used percent: {round(shutil.disk_usage(az).used/shutil.disk_usage(az).total*100,3)}%")
             stdscr.addstr(1,40,f"Disk Change: {parse_size(difftx)}")#Using difft to 1s
             stdscr.addstr(0,40,f"Disk Speed: {parse_size(xdifftx)}/sec")#Using difft to 1s
             stdscr.addstr(2,40,f"Total Change: {parse_size(difftxa)}")#Using difft to 1s
